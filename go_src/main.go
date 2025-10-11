@@ -72,13 +72,8 @@ func (me *TermEverything) catchActionChannel() {
 	for {
 		action := <-me.pluginChan
 		log.Log(TERM_EVERYTHING, "Plugin got action: ", action)
-		// switch action.(type) {
-		// case widget.ActionQuit:
-		// 	log.Log(TERM_EVERYTHING, "Plugin got ActionQuit")
-		// 	return
-		// default:
-		// 	log.Log(TERM_EVERYTHING, "Plugin got unknown action")
-		// }
+
+		me.doAction(action)
 	}
 }
 

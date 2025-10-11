@@ -23,4 +23,5 @@ third_party/chafa_source/build
 debug.log
 
 resources/out/bunterm
+go_src/term_everything.so
 

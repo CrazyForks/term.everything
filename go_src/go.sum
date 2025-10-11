@@ -1,0 +1,4 @@
+go.wit.com/log v0.25.1 h1:74WVf9NSN6z5jc2oSbA1ehxdZ7V/NBXTk5t0jIoaTMg=
+go.wit.com/log v0.25.1/go.mod h1:XE4lTfAibWgwBJksIk7u3IEJ8xcBvNhnlewYAQGj2Ew=
+go.wit.com/widget v1.1.30 h1:O/dIG7QtDrZkR5P6f8JAMyevBiMXSun9vL6F0KFAWV8=
+go.wit.com/widget v1.1.30/go.mod h1:wj7TpAr2gk7Poa+v8XQkH1aidnTdgAa/a8GxrMtcztw=

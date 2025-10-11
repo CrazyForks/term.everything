@@ -11,6 +11,9 @@ import "C"
 import (
 	"fmt"
 	"time"
+
+	"go.wit.com/log"
+	"go.wit.com/widget"
 )
 
 func main() {
@@ -43,4 +46,52 @@ func main() {
 
 	time.Sleep(time.Second)
 
+}
+
+type TermEverything struct {
+	initialized bool
+	pluginChan  chan widget.Action
+	frozenChan  chan widget.Action
+	callback    chan widget.Action
+}
+
+func New() *TermEverything {
+	me := new(TermEverything)
+	me.pluginChan = make(chan widget.Action, 1)
+	me.frozenChan = make(chan widget.Action, 1)
+
+	go me.catchActionChannel()
+
+	log.Log(TERM_EVERYTHING, "Init() start channel reciever")
+	go me.catchActionChannel()
+	log.Log(TERM_EVERYTHING, "Init() END")
+	return me
+}
+
+func (me *TermEverything) catchActionChannel() {
+	for {
+		action := <-me.pluginChan
+		log.Log(TERM_EVERYTHING, "Plugin got action: ", action)
+		// switch action.(type) {
+		// case widget.ActionQuit:
+		// 	log.Log(TERM_EVERYTHING, "Plugin got ActionQuit")
+		// 	return
+		// default:
+		// 	log.Log(TERM_EVERYTHING, "Plugin got unknown action")
+		// }
+	}
+}
+
+func (me *TermEverything) Callback(guiCallback chan widget.Action) {
+	me.callback = guiCallback
+}
+
+// this is the function that receives things from the application
+func (me *TermEverything) PluginChannel() chan widget.Action {
+	return me.pluginChan
+}
+
+// this is the function that receives things from the application
+func (me *TermEverything) FrozenChannel() chan widget.Action {
+	return me.frozenChan
 }

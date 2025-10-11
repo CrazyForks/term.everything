@@ -66,7 +66,7 @@ $(CHAFAPKGPATH)/chafa.pc:
 	@mkdir -p "$(CHAFAROOT)" "$(CHAFAPKGPATH)"
 	cd "$(CHAFASOURCE)" && \
     mkdir -p build && cd build && \
-        ../autogen.sh --prefix="$(CHAFAROOT)" && \
+        ../autogen.sh --prefix="$(CHAFAROOT)" CFLAGS="-fPIC" CXXFLAGS="-fPIC" && \
         make -j$$(nproc) && make install
     # If chafa.pc was installed under lib/pkgconfig, mirror it into $(CHAFAPKGPATH)
 	@if [ -f "$(CHAFAROOT)/lib/pkgconfig/chafa.pc" ]; then \

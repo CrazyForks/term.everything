@@ -74,7 +74,12 @@ func genRequestHandler(i Interface) string {
 		if req.Name == "release" {
 			out.WriteString("if autoRemove {\n")
 			out.WriteString("  s.RemoveObject(message.ObjectID)\n")
-			fmt.Fprintf(&out, "  s.RemoveGlobalBind(GlobalID(GlobalID_%s), message.ObjectID)\n", i.Name)
+
+			switch i.Name {
+			case "WlShm", "WlSeat", "WlOutput", "WlKeyboard", "WlPointer", "WlTouch", "WlDataDevice", "ZwpXwaylandKeyboardGrabManagerV1":
+				fmt.Fprintf(&out, "  s.RemoveGlobal%sBind(ObjectID[%s](message.ObjectID))\n", i.Name, i.Name)
+			}
+
 			out.WriteString("}\n")
 		}
 		if req.Name == "destroy" {

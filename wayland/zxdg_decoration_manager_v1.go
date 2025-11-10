@@ -10,8 +10,6 @@ func (z *ZxdgDecorationManagerV1) ZxdgDecorationManagerV1_destroy(
 	s protocols.ClientState,
 	object_id protocols.ObjectID[protocols.ZxdgDecorationManagerV1],
 ) bool {
-	//TODO make type safe
-	s.RemoveGlobalBind(protocols.GlobalID_ZxdgDecorationManagerV1, protocols.AnyObjectID(object_id))
 	return true
 }
 

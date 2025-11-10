@@ -74,6 +74,7 @@ func MakeTerminalWindow(
 		Clients:                  make([]*wayland.Client, 0),
 		// RestoreTerminalMode:      func() error { return nil },
 		RestoreTerminalMode: restoreTerminalMode,
+		GetClients:          make(chan *wayland.Client, 32),
 	}
 
 	os.Stdout.WriteString(escapecodes.EnableAlternativeScreenBuffer)
@@ -122,32 +123,41 @@ func (tw *TerminalWindow) OnExit() {
 }
 
 func (tw *TerminalWindow) InputLoop() {
-	buf := make([]byte, 4096)
-	for {
-
-		n, err := os.Stdin.Read(buf)
-
-		if err != nil || n == 0 {
-			fmt.Printf("Error reading stdin: %v\n", err)
-			return
+	read_chan := make(chan []byte, 1024)
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, err := os.Stdin.Read(buf)
+			if err != nil || n == 0 {
+				fmt.Printf("Error reading stdin: %v\n", err)
+				return
+			}
+			// TODO make some sort of pool instead
+			// of allocating new slices every time
+			chunk := make([]byte, n)
+			copy(chunk, buf[:n])
+			read_chan <- chunk
 		}
-		chunk := buf[:n]
+	}()
 
-		// Very literal: TS line -> const codes = convert_keycode_to_xbd_code(chunk);
-		codes := ConvertKeycodeToXbdCode(chunk)
-
-		now := uint32(time.Now().UnixMilli())
-
+	for {
+		var chunk []byte
 		for {
 			select {
 			case client := <-tw.GetClients:
 				//TODO removing clients
 				tw.Clients = append(tw.Clients, client)
-			default:
-				goto DoneGettingClients
+			case chunk = <-read_chan:
+				goto GotData
 			}
 		}
-	DoneGettingClients:
+
+	GotData:
+
+		// Very literal: TS line -> const codes = convert_keycode_to_xbd_code(chunk);
+		codes := ConvertKeycodeToXbdCode(chunk)
+
+		now := uint32(time.Now().UnixMilli())
 
 		for _, code := range codes {
 			tw.FrameEvents <- code

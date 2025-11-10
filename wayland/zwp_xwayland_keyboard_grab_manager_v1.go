@@ -11,8 +11,7 @@ func (m *ZwpXwaylandKeyboardGrabManagerV1) ZwpXwaylandKeyboardGrabManagerV1_dest
 	s protocols.ClientState,
 	object_id protocols.ObjectID[protocols.ZwpXwaylandKeyboardGrabManagerV1],
 ) bool {
-	// TODO make type safe
-	s.RemoveGlobalBind(protocols.GlobalID_ZwpXwaylandKeyboardGrabManagerV1, protocols.AnyObjectID(object_id))
+	s.RemoveGlobalZwpXwaylandKeyboardGrabManagerV1Bind(object_id)
 	return true
 }
 

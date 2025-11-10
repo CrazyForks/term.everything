@@ -56,6 +56,9 @@ var AdvertisedGlobalObjectNames = []AdvertisedGlobalObjectName{
 func GetGlobalWlDisplayBinds(cs ClientState) map[ObjectID[WlDisplay]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlDisplay))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlDisplay]]Version)
 	return m
 }
@@ -63,6 +66,9 @@ func GetGlobalWlDisplayBinds(cs ClientState) map[ObjectID[WlDisplay]]Version {
 func GetGlobalWlCompositorBinds(cs ClientState) map[ObjectID[WlCompositor]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlCompositor))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlCompositor]]Version)
 	return m
 }
@@ -70,6 +76,9 @@ func GetGlobalWlCompositorBinds(cs ClientState) map[ObjectID[WlCompositor]]Versi
 func GetGlobalWlSubcompositorBinds(cs ClientState) map[ObjectID[WlSubcompositor]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlSubcompositor))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlSubcompositor]]Version)
 	return m
 }
@@ -77,6 +86,9 @@ func GetGlobalWlSubcompositorBinds(cs ClientState) map[ObjectID[WlSubcompositor]
 func GetGlobalWlOutputBinds(cs ClientState) map[ObjectID[WlOutput]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlOutput))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlOutput]]Version)
 	return m
 }
@@ -84,6 +96,9 @@ func GetGlobalWlOutputBinds(cs ClientState) map[ObjectID[WlOutput]]Version {
 func GetGlobalWlSeatBinds(cs ClientState) map[ObjectID[WlSeat]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlSeat))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlSeat]]Version)
 	return m
 }
@@ -91,6 +106,9 @@ func GetGlobalWlSeatBinds(cs ClientState) map[ObjectID[WlSeat]]Version {
 func GetGlobalWlShmBinds(cs ClientState) map[ObjectID[WlShm]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlShm))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlShm]]Version)
 	return m
 }
@@ -98,6 +116,9 @@ func GetGlobalWlShmBinds(cs ClientState) map[ObjectID[WlShm]]Version {
 func GetGlobalXdgWmBaseBinds(cs ClientState) map[ObjectID[XdgWmBase]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_XdgWmBase))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[XdgWmBase]]Version)
 	return m
 }
@@ -105,6 +126,9 @@ func GetGlobalXdgWmBaseBinds(cs ClientState) map[ObjectID[XdgWmBase]]Version {
 func GetGlobalWlDataDeviceManagerBinds(cs ClientState) map[ObjectID[WlDataDeviceManager]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlDataDeviceManager))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlDataDeviceManager]]Version)
 	return m
 }
@@ -112,6 +136,9 @@ func GetGlobalWlDataDeviceManagerBinds(cs ClientState) map[ObjectID[WlDataDevice
 func GetGlobalWlKeyboardBinds(cs ClientState) map[ObjectID[WlKeyboard]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlKeyboard))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlKeyboard]]Version)
 	return m
 }
@@ -119,6 +146,9 @@ func GetGlobalWlKeyboardBinds(cs ClientState) map[ObjectID[WlKeyboard]]Version {
 func GetGlobalWlPointerBinds(cs ClientState) map[ObjectID[WlPointer]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlPointer))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlPointer]]Version)
 	return m
 }
@@ -126,6 +156,9 @@ func GetGlobalWlPointerBinds(cs ClientState) map[ObjectID[WlPointer]]Version {
 func GetGlobalZwpXwaylandKeyboardGrabManagerV1Binds(cs ClientState) map[ObjectID[ZwpXwaylandKeyboardGrabManagerV1]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_ZwpXwaylandKeyboardGrabManagerV1))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[ZwpXwaylandKeyboardGrabManagerV1]]Version)
 	return m
 }
@@ -133,6 +166,9 @@ func GetGlobalZwpXwaylandKeyboardGrabManagerV1Binds(cs ClientState) map[ObjectID
 func GetGlobalXwaylandShellV1Binds(cs ClientState) map[ObjectID[XwaylandShellV1]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_XwaylandShellV1))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[XwaylandShellV1]]Version)
 	return m
 }
@@ -140,6 +176,9 @@ func GetGlobalXwaylandShellV1Binds(cs ClientState) map[ObjectID[XwaylandShellV1]
 func GetGlobalWlDataDeviceBinds(cs ClientState) map[ObjectID[WlDataDevice]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlDataDevice))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlDataDevice]]Version)
 	return m
 }
@@ -147,6 +186,9 @@ func GetGlobalWlDataDeviceBinds(cs ClientState) map[ObjectID[WlDataDevice]]Versi
 func GetGlobalWlTouchBinds(cs ClientState) map[ObjectID[WlTouch]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_WlTouch))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[WlTouch]]Version)
 	return m
 }
@@ -154,6 +196,9 @@ func GetGlobalWlTouchBinds(cs ClientState) map[ObjectID[WlTouch]]Version {
 func GetGlobalZxdgDecorationManagerV1Binds(cs ClientState) map[ObjectID[ZxdgDecorationManagerV1]]Version {
 
 	v := cs.GetGlobalBinds(GlobalID(GlobalID_ZxdgDecorationManagerV1))
+	if v == nil {
+		return nil
+	}
 	m := v.(map[ObjectID[ZxdgDecorationManagerV1]]Version)
 	return m
 }

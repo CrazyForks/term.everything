@@ -72,6 +72,7 @@ func MakeTerminalDrawLoop(desktop_size wayland.Size,
 		DesiredFrameTimeSeconds: 0.016, // ~60 FPS
 		StatusLine:              MakeStatusLine(),
 		FrameEvents:             frameEvents,
+		GetClients:              make(chan *wayland.Client, 32),
 	}
 	if args != nil && args.MaxFrameRate != "" {
 		if fps, err := strconv.ParseFloat(args.MaxFrameRate, 64); err == nil && fps > 0 {

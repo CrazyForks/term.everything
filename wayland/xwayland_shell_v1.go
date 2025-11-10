@@ -14,8 +14,6 @@ func (x *XwaylandShellV1) XwaylandShellV1_destroy(
 	s protocols.ClientState,
 	object_id protocols.ObjectID[protocols.XwaylandShellV1],
 ) bool {
-	// TODO make this type safe
-	s.RemoveGlobalBind(protocols.GlobalID(protocols.GlobalID_XwaylandShellV1), protocols.AnyObjectID(object_id))
 	return true
 }
 

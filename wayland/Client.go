@@ -37,7 +37,7 @@ type Client struct {
 
 	FrameDrawRequests chan protocols.ObjectID[protocols.WlCallback]
 
-	GlobalBinds map[protocols.GlobalID]map[protocols.AnyObjectID]protocols.Version
+	GlobalBinds map[protocols.GlobalID]any
 
 	LastGetMessageTime time.Time
 }
@@ -117,14 +117,6 @@ func (c *Client) GetGlobalBinds(globalID protocols.GlobalID) any {
 	return c.GlobalBinds[globalID]
 }
 
-func (c *Client) RemoveGlobalBind(globalID protocols.GlobalID, id protocols.AnyObjectID) {
-	binds, ok := c.GlobalBinds[globalID]
-	if !ok {
-		return
-	}
-	delete(binds, id)
-}
-
 /**
  * Add a bound object_id to a list
  * of global_ids. SO that you can
@@ -133,14 +125,14 @@ func (c *Client) RemoveGlobalBind(globalID protocols.GlobalID, id protocols.AnyO
  * @param global_id
  * @param object_id
  */
-func (c *Client) AddGlobalBind(globalID protocols.GlobalID, objectID protocols.AnyObjectID, version protocols.Version) {
-	binds, ok := c.GlobalBinds[globalID]
-	if !ok {
-		binds = make(map[protocols.AnyObjectID]protocols.Version)
-		c.GlobalBinds[globalID] = binds
-	}
-	binds[objectID] = version
-}
+// func (c *Client) AddGlobalBind(globalID protocols.GlobalID, objectID protocols.AnyObjectID, version protocols.Version) {
+// 	binds, ok := c.GlobalBinds[globalID]
+// 	if !ok {
+// 		binds = make(map[protocols.AnyObjectID]protocols.Version)
+// 		c.GlobalBinds[globalID] = binds
+// 	}
+// 	binds[objectID] = version
+// }
 
 func (c *Client) AddObject(id protocols.AnyObjectID, v any) {
 	if v == nil {
@@ -181,7 +173,7 @@ func MakeClient(conn *net.UnixConn) *Client {
 		drawableSurfaces: make(map[protocols.ObjectID[protocols.WlSurface]]bool),
 		topLevelSurfaces: make(map[protocols.ObjectID[protocols.XdgToplevel]]bool),
 
-		GlobalBinds:        make(map[protocols.GlobalID]map[protocols.AnyObjectID]protocols.Version),
+		GlobalBinds:        make(map[protocols.GlobalID]any),
 		LastGetMessageTime: time.Now().Add(-WAIT_TIME - time.Millisecond),
 		FrameDrawRequests:  make(chan protocols.ObjectID[protocols.WlCallback], 1024),
 	}
@@ -189,6 +181,8 @@ func MakeClient(conn *net.UnixConn) *Client {
 
 func (c *Client) MainLoop() {
 	for {
+		elapsed := time.Since(c.LastGetMessageTime)
+		timeout := time.After(WAIT_TIME - elapsed)
 
 		for {
 			select {
@@ -197,13 +191,15 @@ func (c *Client) MainLoop() {
 					log.Printf("Send error: %v", err)
 					return
 				}
-			default:
-				elapsed := time.Since(c.LastGetMessageTime)
-				if elapsed < WAIT_TIME {
-					time.Sleep(WAIT_TIME - elapsed)
-				}
-				c.LastGetMessageTime = time.Now()
+			case <-timeout:
 				goto drained
+				// default:
+				// 	elapsed := time.Since(c.LastGetMessageTime)
+				// 	if elapsed < WAIT_TIME {
+				// 		time.Sleep(WAIT_TIME - elapsed)
+				// 	}
+				// 	c.LastGetMessageTime = time.Now()
+				// 	goto drained
 			}
 		}
 	drained:

@@ -13,14 +13,21 @@ func (w *WlRegistryDelegateImpl) WlRegistry_bind(s protocols.ClientState, object
 
 	switch name {
 	case uint32(protocols.GlobalID_WlShm):
+		s.AddGlobalWlShmBind(protocols.ObjectID[protocols.WlShm](idID), version)
 	case uint32(protocols.GlobalID_WlSeat):
+		s.AddGlobalWlSeatBind(protocols.ObjectID[protocols.WlSeat](idID), version)
 	case uint32(protocols.GlobalID_WlOutput):
+		s.AddGlobalWlOutputBind(protocols.ObjectID[protocols.WlOutput](idID), version)
 	case uint32(protocols.GlobalID_WlKeyboard):
+		s.AddGlobalWlKeyboardBind(protocols.ObjectID[protocols.WlKeyboard](idID), version)
 	case uint32(protocols.GlobalID_WlPointer):
+		s.AddGlobalWlPointerBind(protocols.ObjectID[protocols.WlPointer](idID), version)
 	case uint32(protocols.GlobalID_WlTouch):
+		s.AddGlobalWlTouchBind(protocols.ObjectID[protocols.WlTouch](idID), version)
 	case uint32(protocols.GlobalID_WlDataDevice):
+		s.AddGlobalWlDataDeviceBind(protocols.ObjectID[protocols.WlDataDevice](idID), version)
 	case uint32(protocols.GlobalID_ZwpXwaylandKeyboardGrabManagerV1):
-		s.AddGlobalBind(protocols.GlobalID(name), idID, version)
+		s.AddGlobalZwpXwaylandKeyboardGrabManagerV1Bind(protocols.ObjectID[protocols.ZwpXwaylandKeyboardGrabManagerV1](idID), version)
 		// const set = s.global_binds.get(name) ?? new Set();
 		// set.add(id_id);
 		// s.global_binds.set(name, set);

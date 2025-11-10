@@ -20,7 +20,7 @@ type OnRequestable interface {
 // Don't use these functions directly; use the ones in wayland/types.go
 type ClientState interface {
 	RemoveObject(AnyObjectID)
-	RemoveGlobalBind(GlobalID, AnyObjectID)
+	// RemoveGlobalBind(GlobalID, AnyObjectID)
 	AddObject(AnyObjectID, any)
 	SetCompositorVersion(uint32)
 	GetCompositorVersion() uint32
@@ -40,7 +40,25 @@ type ClientState interface {
 	GetSurfaceFromRole(AnyObjectID) any
 
 	GetGlobalBinds(GlobalID) any
-	AddGlobalBind(GlobalID, AnyObjectID, Version)
+	// AddGlobalBind(GlobalID, AnyObjectID, Version)
+
+	AddGlobalWlShmBind(ObjectID[WlShm], Version)
+	AddGlobalWlSeatBind(ObjectID[WlSeat], Version)
+	AddGlobalWlOutputBind(ObjectID[WlOutput], Version)
+	AddGlobalWlKeyboardBind(ObjectID[WlKeyboard], Version)
+	AddGlobalWlPointerBind(ObjectID[WlPointer], Version)
+	AddGlobalWlTouchBind(ObjectID[WlTouch], Version)
+	AddGlobalWlDataDeviceBind(ObjectID[WlDataDevice], Version)
+	AddGlobalZwpXwaylandKeyboardGrabManagerV1Bind(ObjectID[ZwpXwaylandKeyboardGrabManagerV1], Version)
+
+	RemoveGlobalWlShmBind(ObjectID[WlShm])
+	RemoveGlobalWlSeatBind(ObjectID[WlSeat])
+	RemoveGlobalWlOutputBind(ObjectID[WlOutput])
+	RemoveGlobalWlKeyboardBind(ObjectID[WlKeyboard])
+	RemoveGlobalWlPointerBind(ObjectID[WlPointer])
+	RemoveGlobalWlTouchBind(ObjectID[WlTouch])
+	RemoveGlobalWlDataDeviceBind(ObjectID[WlDataDevice])
+	RemoveGlobalZwpXwaylandKeyboardGrabManagerV1Bind(ObjectID[ZwpXwaylandKeyboardGrabManagerV1])
 }
 
 type OutgoingEvent struct {

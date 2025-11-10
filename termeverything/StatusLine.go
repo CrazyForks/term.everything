@@ -98,7 +98,7 @@ func MakeStatusLine() *Status_Line {
 				Keycode: &escape,
 				String:  "[ESC] to quit",
 				Callback: func() {
-					os.Exit(0)
+					GlobalExitChan <- 0
 				},
 			},
 		},

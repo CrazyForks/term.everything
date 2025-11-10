@@ -31,6 +31,7 @@ func MainLoop() {
 		args.HideStatusBar,
 		len(args.Positionals) > 0,
 		terminalWindow.SharedRenderedScreenSize,
+		terminalWindow.FrameEvents,
 		&args,
 	)
 

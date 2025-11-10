@@ -13,7 +13,6 @@ generated_protocols := $(patsubst ./wayland/generate/resources/%,./wayland/proto
 
 generated_helpers := $(patsubst ./wayland/generate/resources/%,./wayland/%.helper.go,$(xml_protocols))
 
-# TODO add term.everything to build
 build: $(generated_protocols) $(generated_helpers) $(bin_name)
 
 # grouped target to generate all protocols and helpers in one go

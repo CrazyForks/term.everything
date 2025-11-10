@@ -1,13 +1,4 @@
 {
-  "yaml.schemas": {
-    "https://taskfile.dev/schema.json": [
-      "**/Taskfile.dist.yml",
-      "**/Taskfile.yml",
-      "**/Taskfile.yaml",
-      "**/taskfile.yml",
-      "**/taskfile.yaml"
-    ]
-  },
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,

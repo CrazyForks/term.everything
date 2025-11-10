@@ -1,10 +1,5 @@
 {
   "recommendations": [
-    "mesonbuild.mesonbuild",
     "ms-vscode.cpptools-extension-pack",
-    "oven.bun-vscode",
-    "esbenp.prettier-vscode",
-    "task.vscode-task",
-    "redhat.vscode-yaml"
   ]
 }

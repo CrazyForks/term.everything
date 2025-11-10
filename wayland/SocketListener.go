@@ -1,30 +1,21 @@
 package wayland
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"sync"
-	"syscall"
-	"time"
 )
 
+// SocketListener listens for new Wayland client connections on a Unix socket.
+// It provides a channel to receive new connections. Whoevere reads from
+// the channel is responsible for closing the connections when done.
 type SocketListener struct {
 	WaylandDisplayName string
 	SocketPath         string
 	Listener           *net.UnixListener
 
-	mu          sync.Mutex
-	connections map[*net.UnixConn]struct{}
-
-	Connections      chan *net.UnixConn
-	CloseConnections chan *net.UnixConn
-
-	closeOnce sync.Once
-	closed    chan struct{}
+	OnConnection chan *net.UnixConn
 }
 
 type HasDisplayName interface {
@@ -45,121 +36,32 @@ func MakeSocketListener(args HasDisplayName) (*SocketListener, error) {
 		WaylandDisplayName: displayName,
 		SocketPath:         socketPath,
 		Listener:           ln,
-		connections:        make(map[*net.UnixConn]struct{}),
-		Connections:        make(chan *net.UnixConn),
-		CloseConnections:   make(chan *net.UnixConn),
-		closed:             make(chan struct{}),
+		OnConnection:       make(chan *net.UnixConn, 32),
 	}
-
-	onExit(func() {
-		_ = w.Close()
-	})
-
-	go w.closeConnLoop()
 
 	return w, nil
 }
 
-func (w *SocketListener) closeConnLoop() {
+func (w *SocketListener) MainLoop() error {
 	for {
-		select {
-		case <-w.closed:
-			return
-		case c := <-w.CloseConnections:
-			if c == nil {
-				continue
-			}
-			_ = c.Close()
-			w.RemoveConnection(c)
+		conn, err := w.Listener.AcceptUnix()
+		if err != nil {
+			return fmt.Errorf("failed to accept connection: %w", err)
 		}
+		w.OnConnection <- conn
 	}
 }
 
-func (w *SocketListener) MainLoop() error {
+func (w *SocketListener) MainLoopThenClose() error {
 	defer w.Close()
-
-	for {
-		_ = w.Listener.SetDeadline(time.Now().Add(2 * time.Second))
-		conn, err := w.Listener.AcceptUnix()
-		if ne, ok := err.(net.Error); ok && ne.Timeout() {
-			select {
-			case <-w.closed:
-				return nil
-			default:
-				continue
-			}
-		}
-		if errors.Is(err, net.ErrClosed) || errors.Is(err, os.ErrClosed) {
-			return nil
-		}
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "accept error: %v\n", err)
-			continue
-		}
-
-		w.AddConnection(conn)
-
-		// Deliver the connection to consumers.
-		select {
-		case w.Connections <- conn:
-		case <-w.closed:
-			_ = conn.Close()
-			return nil
-		}
-	}
+	return w.MainLoop()
 }
 
 func (w *SocketListener) Close() error {
-	var firstErr error
-	w.closeOnce.Do(func() {
-		close(w.closed)
-
-		if w.Listener != nil {
-			if err := w.Listener.Close(); err != nil && firstErr == nil {
-				firstErr = err
-			}
-		}
-
-		w.mu.Lock()
-		for c := range w.connections {
-			_ = c.Close()
-		}
-		w.connections = make(map[*net.UnixConn]struct{})
-		w.mu.Unlock()
-
-		if err := removeFileIfExists(w.SocketPath); err != nil && firstErr == nil {
-			firstErr = err
-		}
-	})
-	return firstErr
-}
-
-func (w *SocketListener) AddConnection(c *net.UnixConn) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	w.connections[c] = struct{}{}
-}
-
-func (w *SocketListener) RemoveConnection(c *net.UnixConn) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	delete(w.connections, c)
-}
-
-func onExit(callback func()) {
-	ch := make(chan os.Signal, 2)
-	signal.Notify(ch,
-		syscall.SIGINT,
-		syscall.SIGQUIT,
-		syscall.SIGTERM,
-		syscall.SIGUSR1,
-		syscall.SIGUSR2,
-	)
-	go func() {
-		<-ch
-		callback()
-		os.Exit(0)
-	}()
+	if w.Listener != nil {
+		w.Listener.Close()
+	}
+	return removeFileIfExists(w.SocketPath)
 }
 
 func GetWaylandDisplayName(args HasDisplayName) string {

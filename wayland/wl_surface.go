@@ -2,6 +2,7 @@ package wayland
 
 import (
 	"fmt"
+	"image"
 
 	"github.com/mmulet/term.everything/wayland/protocols"
 )
@@ -13,6 +14,17 @@ type Texture struct {
 	Data   []byte
 }
 
+func (t *Texture) AsRGBA() *image.RGBA {
+	if t == nil || t.Width == 0 || t.Height == 0 || len(t.Data) == 0 {
+		return nil
+	}
+	return &image.RGBA{
+		Pix:    t.Data,
+		Stride: int(t.Stride),
+		Rect:   image.Rect(0, 0, int(t.Width), int(t.Height)),
+	}
+}
+
 type WlSurface struct {
 	Position struct {
 		X int32
@@ -20,7 +32,7 @@ type WlSurface struct {
 		Z int32
 	}
 
-	texture *Texture
+	Texture *Texture
 	/**
 	 * xdg_surface is not a role,
 	 * but have to keep track anyway.

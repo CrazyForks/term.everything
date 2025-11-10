@@ -135,7 +135,7 @@ func (x *XdgSurface) XdgSurface_get_toplevel(
 	// TODO should this be here
 
 	if output_binds := protocols.GetGlobalWlOutputBinds(s); output_binds != nil {
-		for output_id, _ := range *output_binds {
+		for output_id, _ := range output_binds {
 			protocols.WlSurface_enter(s, *surface_id, output_id)
 		}
 	}
@@ -144,14 +144,14 @@ func (x *XdgSurface) XdgSurface_get_toplevel(
 
 	if keyboard_binds := protocols.GetGlobalWlKeyboardBinds(s); keyboard_binds != nil {
 
-		for keyboard_id, _ := range *keyboard_binds {
+		for keyboard_id, _ := range keyboard_binds {
 			protocols.WlKeyboard_enter(s, keyboard_id, serial, *surface_id, []byte{})
 		}
 	}
 
 	if pointer_binds := protocols.GetGlobalWlPointerBinds(s); pointer_binds != nil {
-		for pointer_id, version := range *pointer_binds {
-			protocols.WlPointer_enter(s, pointer_id, serial, *surface_id, Pointer.windowX, Pointer.windowY)
+		for pointer_id, version := range pointer_binds {
+			protocols.WlPointer_enter(s, pointer_id, serial, *surface_id, Pointer.WindowX, Pointer.WindowY)
 			protocols.WlPointer_frame(s, uint32(version), pointer_id)
 		}
 	}
@@ -179,12 +179,12 @@ func (x *XdgSurface) XdgSurface_get_toplevel(
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		if pointer_binds := protocols.GetGlobalWlPointerBinds(s); pointer_binds != nil {
-			for pointer_id, _ := range *pointer_binds {
+			for pointer_id, _ := range pointer_binds {
 				pointer := GetWlPointerObject(s, pointer_id)
 				if pointer == nil {
 					continue
 				}
-				protocols.WlPointer_enter(s, pointer_id, 0, *surface_id, pointer.windowX, pointer.windowY)
+				protocols.WlPointer_enter(s, pointer_id, 0, *surface_id, pointer.WindowX, pointer.WindowY)
 			}
 		}
 	}()

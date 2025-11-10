@@ -13,7 +13,7 @@ import (
 
 const WAIT_TIME = time.Millisecond / 2
 
-type WaylandClient struct {
+type Client struct {
 	drawableSurfaces map[protocols.ObjectID[protocols.WlSurface]]bool
 	topLevelSurfaces map[protocols.ObjectID[protocols.XdgToplevel]]bool
 
@@ -35,25 +35,25 @@ type WaylandClient struct {
 
 	RolesToSurfaces map[protocols.AnyObjectID]protocols.ObjectID[protocols.WlSurface]
 
-	FrameDrawRequests []protocols.ObjectID[protocols.WlCallback]
+	FrameDrawRequests chan protocols.ObjectID[protocols.WlCallback]
 
 	GlobalBinds map[protocols.GlobalID]map[protocols.AnyObjectID]protocols.Version
 
 	LastGetMessageTime time.Time
 }
 
-func (c *WaylandClient) AddFrameDrawRequest(cb protocols.ObjectID[protocols.WlCallback]) {
-	c.FrameDrawRequests = append(c.FrameDrawRequests, cb)
+func (c *Client) AddFrameDrawRequest(cb protocols.ObjectID[protocols.WlCallback]) {
+	c.FrameDrawRequests <- cb
 }
 
-func (c *WaylandClient) GetSurfaceIDFromRole(roleObjectID protocols.AnyObjectID) *protocols.ObjectID[protocols.WlSurface] {
+func (c *Client) GetSurfaceIDFromRole(roleObjectID protocols.AnyObjectID) *protocols.ObjectID[protocols.WlSurface] {
 	if sid, ok := c.RolesToSurfaces[roleObjectID]; ok {
 		return &sid
 	}
 	return nil
 }
 
-func (c *WaylandClient) GetSurfaceFromRole(roleObjectID protocols.AnyObjectID) any {
+func (c *Client) GetSurfaceFromRole(roleObjectID protocols.AnyObjectID) any {
 	sidAny := c.GetSurfaceIDFromRole(roleObjectID)
 	if sidAny == nil {
 		return nil
@@ -62,11 +62,11 @@ func (c *WaylandClient) GetSurfaceFromRole(roleObjectID protocols.AnyObjectID) a
 	return surface
 }
 
-func (c *WaylandClient) UnregisterRoleToSurface(roleID protocols.AnyObjectID) {
+func (c *Client) UnregisterRoleToSurface(roleID protocols.AnyObjectID) {
 	delete(c.RolesToSurfaces, roleID)
 }
 
-func (c *WaylandClient) RegisterRoleToSurface(roleID protocols.AnyObjectID, surfaceID protocols.ObjectID[protocols.WlSurface]) {
+func (c *Client) RegisterRoleToSurface(roleID protocols.AnyObjectID, surfaceID protocols.ObjectID[protocols.WlSurface]) {
 	c.RolesToSurfaces[roleID] = surfaceID
 }
 
@@ -76,7 +76,7 @@ func (c *WaylandClient) RegisterRoleToSurface(roleID protocols.AnyObjectID, surf
  * @param surface_id
  * @param maybe_descendant_id
  */
-func (c *WaylandClient) FindDescendantSurface(surfaceID protocols.ObjectID[protocols.WlSurface], maybeDescendantID protocols.ObjectID[protocols.WlSurface]) bool {
+func (c *Client) FindDescendantSurface(surfaceID protocols.ObjectID[protocols.WlSurface], maybeDescendantID protocols.ObjectID[protocols.WlSurface]) bool {
 
 	surface := GetWlSurfaceObject(c, surfaceID)
 	if surface == nil {
@@ -104,7 +104,7 @@ func (c *WaylandClient) FindDescendantSurface(surfaceID protocols.ObjectID[proto
 	return false
 }
 
-func (c *WaylandClient) SendError(objectID protocols.AnyObjectID, code uint32, message string) {
+func (c *Client) SendError(objectID protocols.AnyObjectID, code uint32, message string) {
 	protocols.WlDisplay_error(c,
 		protocols.ObjectID[protocols.WlDisplay](protocols.GlobalID_WlDisplay),
 		objectID,
@@ -113,11 +113,11 @@ func (c *WaylandClient) SendError(objectID protocols.AnyObjectID, code uint32, m
 	)
 }
 
-func (c *WaylandClient) GetGlobalBinds(globalID protocols.GlobalID) any {
+func (c *Client) GetGlobalBinds(globalID protocols.GlobalID) any {
 	return c.GlobalBinds[globalID]
 }
 
-func (c *WaylandClient) RemoveGlobalBind(globalID protocols.GlobalID, id protocols.AnyObjectID) {
+func (c *Client) RemoveGlobalBind(globalID protocols.GlobalID, id protocols.AnyObjectID) {
 	binds, ok := c.GlobalBinds[globalID]
 	if !ok {
 		return
@@ -133,7 +133,7 @@ func (c *WaylandClient) RemoveGlobalBind(globalID protocols.GlobalID, id protoco
  * @param global_id
  * @param object_id
  */
-func (c *WaylandClient) AddGlobalBind(globalID protocols.GlobalID, objectID protocols.AnyObjectID, version protocols.Version) {
+func (c *Client) AddGlobalBind(globalID protocols.GlobalID, objectID protocols.AnyObjectID, version protocols.Version) {
 	binds, ok := c.GlobalBinds[globalID]
 	if !ok {
 		binds = make(map[protocols.AnyObjectID]protocols.Version)
@@ -142,7 +142,7 @@ func (c *WaylandClient) AddGlobalBind(globalID protocols.GlobalID, objectID prot
 	binds[objectID] = version
 }
 
-func (c *WaylandClient) AddObject(id protocols.AnyObjectID, v any) {
+func (c *Client) AddObject(id protocols.AnyObjectID, v any) {
 	if v == nil {
 		log.Printf("AddObject: object is nil for id %d", uint32(id))
 	}
@@ -152,11 +152,11 @@ func (c *WaylandClient) AddObject(id protocols.AnyObjectID, v any) {
 	c.Objects[id] = v
 }
 
-func (c *WaylandClient) RemoveObject(id protocols.AnyObjectID) {
+func (c *Client) RemoveObject(id protocols.AnyObjectID) {
 	delete(c.Objects, id)
 }
 
-func (c *WaylandClient) GetObject(id protocols.AnyObjectID) any {
+func (c *Client) GetObject(id protocols.AnyObjectID) any {
 	object, ok := c.Objects[id]
 	if !ok {
 		return nil
@@ -164,8 +164,8 @@ func (c *WaylandClient) GetObject(id protocols.AnyObjectID) any {
 	return object
 }
 
-func MakeClient(conn *net.UnixConn) *WaylandClient {
-	return &WaylandClient{
+func MakeClient(conn *net.UnixConn) *Client {
+	return &Client{
 		UnixConnection:    conn,
 		CompositorVersion: 1,
 		DisplayID:         protocols.ObjectID[protocols.WlDisplay](1),
@@ -183,11 +183,11 @@ func MakeClient(conn *net.UnixConn) *WaylandClient {
 
 		GlobalBinds:        make(map[protocols.GlobalID]map[protocols.AnyObjectID]protocols.Version),
 		LastGetMessageTime: time.Now().Add(-WAIT_TIME - time.Millisecond),
-		FrameDrawRequests:  []protocols.ObjectID[protocols.WlCallback]{},
+		FrameDrawRequests:  make(chan protocols.ObjectID[protocols.WlCallback], 1024),
 	}
 }
 
-func (c *WaylandClient) MainLoop() {
+func (c *Client) MainLoop() {
 	for {
 
 		for {
@@ -222,8 +222,7 @@ func (c *WaylandClient) MainLoop() {
 	}
 }
 
-// Sender: enqueue event via channel
-func (c *WaylandClient) Send(ev protocols.OutgoingEvent) {
+func (c *Client) Send(ev protocols.OutgoingEvent) {
 	// Allow backpressure to naturally block the sender goroutine.
 	c.OutgoingChannel <- ev
 }
@@ -234,7 +233,7 @@ func (c *WaylandClient) Send(ev protocols.OutgoingEvent) {
  * @returns Returns if we should continue listening or sending on this socket any more
  * returns falsy mostly if the client has disconnected
  */
-func (c *WaylandClient) SendPendingMessage(ev protocols.OutgoingEvent) error {
+func (c *Client) SendPendingMessage(ev protocols.OutgoingEvent) error {
 	// if WaylandDebugTimeOnly() {
 
 	// 	log.Printf("client -> eid=%d opcode=%d len=%d fd=%v",
@@ -274,7 +273,7 @@ func (c *WaylandClient) SendPendingMessage(ev protocols.OutgoingEvent) error {
 	// return true
 }
 
-func (c *WaylandClient) ParseMessages(n int, fds []int) error {
+func (c *Client) ParseMessages(n int, fds []int) error {
 	// if len(fds) > 0 && WaylandDebugTimeOnly() {
 	// 	log.Printf("client: received %d file descriptors", len(fds))
 	// }
@@ -314,7 +313,7 @@ func (c *WaylandClient) ParseMessages(n int, fds []int) error {
 	return nil
 }
 
-func (c *WaylandClient) ClaimFileDescriptor() *protocols.FileDescriptor {
+func (c *Client) ClaimFileDescriptor() *protocols.FileDescriptor {
 	if len(c.UnclaimedFDs) == 0 {
 		return nil
 	}
@@ -323,12 +322,12 @@ func (c *WaylandClient) ClaimFileDescriptor() *protocols.FileDescriptor {
 	return &fd
 }
 
-func (c *WaylandClient) SetCompositorVersion(v uint32) { c.CompositorVersion = v }
-func (c *WaylandClient) GetCompositorVersion() uint32  { return c.CompositorVersion }
+func (c *Client) SetCompositorVersion(v uint32) { c.CompositorVersion = v }
+func (c *Client) GetCompositorVersion() uint32  { return c.CompositorVersion }
 
-func (c *WaylandClient) DrawableSurfaces() map[protocols.ObjectID[protocols.WlSurface]]bool {
+func (c *Client) DrawableSurfaces() map[protocols.ObjectID[protocols.WlSurface]]bool {
 	return c.drawableSurfaces
 }
-func (c *WaylandClient) TopLevelSurfaces() map[protocols.ObjectID[protocols.XdgToplevel]]bool {
+func (c *Client) TopLevelSurfaces() map[protocols.ObjectID[protocols.XdgToplevel]]bool {
 	return c.topLevelSurfaces
 }

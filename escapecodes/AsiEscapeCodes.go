@@ -1,0 +1,43 @@
+package escapecodes
+
+const (
+	DisableAlternativeScreenBuffer = "\x1b[?1049l"
+	EnableAlternativeScreenBuffer  = "\x1b[?1049h"
+	EnableNormalMouseTracking      = "\x1b[?1000h"
+	EnableMouseTracking            = "\x1b[?1003h"
+	DisableMouseTracking           = "\x1b[?1003l"
+	DisableNormalMouseTracking     = "\x1b[?1000l"
+
+	HideCursor = "\x1b[?25l"
+	ShowCursor = "\x1b[?25h"
+	Reset      = "\x1b[0m"
+	FgBlack    = "\x1b[30m"
+	BgWhite    = "\x1b[47m"
+	FgWhite    = "\x1b[37m"
+	BgBlack    = "\x1b[40m"
+	FgRed      = "\x1b[31m"
+	BgRed      = "\x1b[41m"
+	FgGreen    = "\x1b[32m"
+	BgGreen    = "\x1b[42m"
+	FgYellow   = "\x1b[33m"
+	BgYellow   = "\x1b[43m"
+	FgBlue     = "\x1b[34m"
+	BgBlue     = "\x1b[44m"
+	FgMagenta  = "\x1b[35m"
+	BgMagenta  = "\x1b[45m"
+	FgCyan     = "\x1b[36m"
+	BgCyan     = "\x1b[46m"
+
+	Bold          = "\x1b[1m"
+	Dim           = "\x1b[2m"
+	Italic        = "\x1b[3m"
+	Underline     = "\x1b[4m"
+	Inverse       = "\x1b[7m"
+	Hidden        = "\x1b[8m"
+	Strikethrough = "\x1b[9m"
+
+	MoveCursorToHome     = "\x1b[H"
+	ClearScreen          = "\x1b[2J"
+	ClearLine            = "\x1b[2K"
+	ClearLineAfterCursor = "\x1b[0K"
+)

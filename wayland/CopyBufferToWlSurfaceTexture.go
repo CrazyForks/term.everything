@@ -21,7 +21,7 @@ func CopyBufferToWlSurfaceTexture(
 		if surface == nil {
 			return
 		}
-		surface.texture = nil
+		surface.Texture = nil
 		return
 	}
 	bufferId := *maybebufferID
@@ -102,29 +102,29 @@ func CopyBufferToWlSurfaceTexture(
 			 */
 			return
 		}
-		x += int32(Pointer.windowX) + role.Data.Hotspot.X
-		y += int32(Pointer.windowY) + role.Data.Hotspot.Y
+		x += int32(Pointer.WindowX) + role.Data.Hotspot.X
+		y += int32(Pointer.WindowY) + role.Data.Hotspot.Y
 
 	}
 	surface.Position.X = x
 	surface.Position.Y = y
 	surface.Position.Z = int32(zIndex)
 
-	if surface.texture != nil {
-		if surface.texture.Stride != uint32(bufferInfo.Stride) ||
-			surface.texture.Width != uint32(bufferInfo.Width) ||
-			surface.texture.Height != uint32(bufferInfo.Height) {
-			surface.texture = nil
+	if surface.Texture != nil {
+		if surface.Texture.Stride != uint32(bufferInfo.Stride) ||
+			surface.Texture.Width != uint32(bufferInfo.Width) ||
+			surface.Texture.Height != uint32(bufferInfo.Height) {
+			surface.Texture = nil
 		}
 	}
 
-	if surface.texture == nil {
+	if surface.Texture == nil {
 		size := int(bufferInfo.Stride) * int(bufferInfo.Height)
 		if size < 0 {
 			fmt.Println("Invalid buffer size; can't commit")
 			return
 		}
-		surface.texture = &Texture{
+		surface.Texture = &Texture{
 			Stride: uint32(bufferInfo.Stride),
 			Width:  uint32(bufferInfo.Width),
 			Height: uint32(bufferInfo.Height),
@@ -139,7 +139,7 @@ func CopyBufferToWlSurfaceTexture(
 	}
 
 	total := int(bufferInfo.Stride) * int(bufferInfo.Height)
-	if total < 0 || total > len(surface.texture.Data) {
+	if total < 0 || total > len(surface.Texture.Data) {
 		fmt.Println("Computed copy size out of bounds; can't commit")
 		return
 	}
@@ -152,7 +152,7 @@ func CopyBufferToWlSurfaceTexture(
 		return
 	}
 
-	copy(surface.texture.Data, src[offset:offset+total])
+	copy(surface.Texture.Data, src[offset:offset+total])
 
 	s.DrawableSurfaces()[surfaceID] = true
 }

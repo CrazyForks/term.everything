@@ -1,16 +1,20 @@
-package server
+package termeverything
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/mmulet/term.everything/escapecodes"
+)
 
 func RenderMarkdownToTerminal(markdown string) string {
 	var outLines []string
 	for _, line := range strings.Split(markdown, "\n") {
 		if strings.HasPrefix(line, "# ") {
-			outLines = append(outLines, AnsiFgGreen+AnsiUnderline+renderCode(line[2:])+AnsiReset)
+			outLines = append(outLines, escapecodes.FgGreen+escapecodes.Underline+renderCode(line[2:])+escapecodes.Reset)
 			continue
 		}
 		if strings.HasPrefix(line, "## ") {
-			outLines = append(outLines, AnsiFgCyan+AnsiUnderline+renderCode(line[3:])+AnsiReset)
+			outLines = append(outLines, escapecodes.FgCyan+escapecodes.Underline+renderCode(line[3:])+escapecodes.Reset)
 			continue
 		}
 		outLines = append(outLines, renderCode(line))
@@ -27,12 +31,12 @@ func renderCode(line string) string {
 			continue
 		}
 		if inCode {
-			outLine.WriteString(AnsiReset)
+			outLine.WriteString(escapecodes.Reset)
 			inCode = false
 			continue
 		}
 		inCode = true
-		outLine.WriteString(AnsiFgYellow)
+		outLine.WriteString(escapecodes.FgYellow)
 	}
 	return outLine.String()
 }

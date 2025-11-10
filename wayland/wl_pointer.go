@@ -8,10 +8,10 @@ import (
 
 type WlPointer struct {
 	// Last cursor surface set via set_cursor
-	pointerSurfaceID map[protocols.ClientState]*protocols.ObjectID[protocols.WlSurface]
+	PointerSurfaceID map[protocols.ClientState]*protocols.ObjectID[protocols.WlSurface]
 
-	windowX float32
-	windowY float32
+	WindowX float32
+	WindowY float32
 }
 
 func (p *WlPointer) WlPointer_set_cursor(
@@ -31,10 +31,10 @@ func (p *WlPointer) WlPointer_set_cursor(
 	//   return;
 	// }
 
-	pointerSurfaceID, ok := p.pointerSurfaceID[s]
+	pointerSurfaceID, ok := p.PointerSurfaceID[s]
 	if ok && !AreSame(pointerSurfaceID, surface_id) {
 		if oldPointerSurface := GetWlSurfaceObject(s, *pointerSurfaceID); oldPointerSurface != nil {
-			oldPointerSurface.texture = nil
+			oldPointerSurface.Texture = nil
 			if oldPointerSurface.Role != nil {
 				if _, isCursor := oldPointerSurface.Role.(*SurfaceRoleCursor); isCursor {
 					oldPointerSurface.Role = nil
@@ -44,7 +44,7 @@ func (p *WlPointer) WlPointer_set_cursor(
 		}
 	}
 
-	p.pointerSurfaceID[s] = surface_id
+	p.PointerSurfaceID[s] = surface_id
 
 	if surface_id == nil {
 		return

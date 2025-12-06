@@ -1,5 +1,10 @@
 package termeverything
 
+import (
+	"strconv"
+	"strings"
+)
+
 type PointerEvent interface {
 	isPointerEvent()
 	isXkbdCode()
@@ -24,8 +29,9 @@ func (p *PointerMove) GetModifiers() int {
 }
 
 type PointerButtonPress struct {
-	Modifiers int
-	Button    LINUX_BUTTON_CODES
+	Modifiers                 int
+	NeedToReleaseOtherButtons bool
+	Button                    LINUX_BUTTON_CODES
 }
 
 func (*PointerButtonPress) isPointerEvent() {}
@@ -44,7 +50,9 @@ func (p *PointerButtonPress) GetModifiers() int {
  * button is being released
  */
 type PointerButtonRelease struct {
-	Modifiers int
+	Button              LINUX_BUTTON_CODES
+	NeedsButtonGuessing bool
+	Modifiers           int
 }
 
 func (*PointerButtonRelease) isPointerEvent() {}
@@ -82,6 +90,164 @@ func MouseModifiers(code, base int) int {
 		modifiers |= ModAlt
 	}
 	return modifiers
+}
+
+func ParseMouseCode(code string) XkbdCode {
+	parts := strings.Split(code, ";")
+	if len(parts) != 3 {
+		return nil
+	}
+	buttonPart := parts[0]
+	colPart := parts[1]
+	rowAndTermPart := parts[2]
+	pressRelease := rowAndTermPart[len(rowAndTermPart)-1]
+	rowPart := rowAndTermPart[:len(rowAndTermPart)-1]
+
+	button, err := strconv.Atoi(buttonPart)
+	if err != nil {
+		return nil
+	}
+	col, err := strconv.Atoi(colPart)
+	if err != nil {
+		return nil
+	}
+	col = col - 1
+	row, err := strconv.Atoi(rowPart)
+	if err != nil {
+		return nil
+	}
+	row = row - 1
+	press := false
+	switch pressRelease {
+	case 'M':
+		press = true
+	case 'm':
+		press = false
+	default:
+		return nil
+	}
+
+	d := button + 32
+	/**
+	* Mouse time!
+	 */
+	switch d {
+
+	case 67, 75, 83, 91:
+		modifiers := MouseModifiers(d, 67)
+		return &PointerMove{
+			Row:       row,
+			Col:       col,
+			Modifiers: modifiers,
+		}
+	case 64, 72, 80, 88:
+		/**
+		* This is pointer moving while
+		* holding left mouse button down
+		*
+		* so far it has always followed
+		* a button down event,
+		* so I'm just sending a pointer move
+		* rather than a button followed by a move
+		 */
+		modifiers := MouseModifiers(d, 64)
+		return &PointerMove{
+			Row:       row,
+			Col:       col,
+			Modifiers: modifiers,
+		}
+	case 65, 73, 81, 89:
+		/**
+		 * Move while holding middle mouse button down
+		 */
+		modifiers := MouseModifiers(d, 65)
+		return &PointerMove{
+			Row:       row,
+			Col:       col,
+			Modifiers: modifiers,
+		}
+	case 66, 74, 82, 90:
+		/**
+		 * Move while holding right mouse button down
+		 */
+		modifiers := MouseModifiers(d, 66)
+		return &PointerMove{
+			Row:       row,
+			Col:       col,
+			Modifiers: modifiers,
+		}
+
+	// Mouse button left down
+	case 32, 40, 48, 56:
+		if press {
+			return &PointerButtonPress{
+				Button:                    BTN_LEFT,
+				NeedToReleaseOtherButtons: false,
+				Modifiers:                 MouseModifiers(d, 32),
+			}
+		}
+		return &PointerButtonRelease{
+			Button:    BTN_LEFT,
+			Modifiers: MouseModifiers(d, 32),
+		}
+	// Mouse button middle down
+	case 33, 41, 49, 57:
+		if press {
+			return &PointerButtonPress{
+				Button:                    BTN_MIDDLE,
+				NeedToReleaseOtherButtons: false,
+				Modifiers:                 MouseModifiers(d, 33),
+			}
+		}
+		return &PointerButtonRelease{
+			Button:    BTN_MIDDLE,
+			Modifiers: MouseModifiers(d, 33),
+		}
+	// Mouse button right down
+	case 34, 42, 50, 58:
+		if press {
+			return &PointerButtonPress{
+				Button:                    BTN_RIGHT,
+				NeedToReleaseOtherButtons: false,
+				Modifiers:                 MouseModifiers(d, 34),
+			}
+		}
+		return &PointerButtonRelease{
+			Button:    BTN_RIGHT,
+			Modifiers: MouseModifiers(d, 34),
+		}
+	// Mouse wheel up
+	case 96, 104, 112, 120:
+		return &PointerWheel{
+			Up:        true,
+			Modifiers: MouseModifiers(d, 96),
+		}
+	// Mouse wheel down
+	case 97, 105, 113, 121:
+		return &PointerWheel{
+			Up:        false,
+			Modifiers: MouseModifiers(d, 97),
+		}
+	}
+	return nil
+}
+
+func ParseSGRMouseSequences(data []byte) []XkbdCode {
+	codes := strings.Split(string(data), "\x1b[<")
+	if len(codes) < 2 {
+		return nil
+	}
+	codes = codes[1:] // First split is empty string before first ESC[<
+	out := make([]XkbdCode, 0)
+	for _, code := range codes {
+
+		buttonCode := ParseMouseCode(code)
+		if buttonCode == nil {
+			continue
+		}
+		out = append(out, buttonCode)
+	}
+	return out
 }
 
 func PointerCode(data []byte) PointerEvent {
@@ -135,25 +301,29 @@ func PointerCode(data []byte) PointerEvent {
 	// Mouse button left down
 	case 32, 40, 48, 56:
 		return &PointerButtonPress{
-			Button:    BTN_LEFT,
-			Modifiers: MouseModifiers(d, 32),
+			Button:                    BTN_LEFT,
+			NeedToReleaseOtherButtons: true,
+			Modifiers:                 MouseModifiers(d, 32),
 		}
 	// Mouse button middle down
 	case 33, 41, 49, 57:
 		return &PointerButtonPress{
-			Button:    BTN_MIDDLE,
-			Modifiers: MouseModifiers(d, 33),
+			Button:                    BTN_MIDDLE,
+			NeedToReleaseOtherButtons: true,
+			Modifiers:                 MouseModifiers(d, 33),
 		}
 	// Mouse button right down
 	case 34, 42, 50, 58:
 		return &PointerButtonPress{
-			Button:    BTN_RIGHT,
-			Modifiers: MouseModifiers(d, 34),
+			Button:                    BTN_RIGHT,
+			NeedToReleaseOtherButtons: true,
+			Modifiers:                 MouseModifiers(d, 34),
 		}
 	// Mouse button up (cannot be sure which button)
 	case 35, 43, 51, 59:
 		return &PointerButtonRelease{
-			Modifiers: MouseModifiers(d, 35),
+			NeedsButtonGuessing: true,
+			Modifiers:           MouseModifiers(d, 35),
 		}
 	// Mouse wheel up
 	case 96, 104, 112, 120:

@@ -99,6 +99,10 @@ func ConvertKeycodeToXbdCode(data []byte) []XkbdCode {
 	if len(data) == 3 {
 		return parse_length_3(data)
 	}
+	if data[0] == 27 && data[1] == 91 && data[2] == 60 {
+		return ParseSGRMouseSequences(data)
+	}
+
 	if len(data) == 4 {
 		return parse_length_4(data)
 	}
@@ -149,9 +153,9 @@ func ConvertKeycodeToXbdCode(data []byte) []XkbdCode {
 				}
 			}
 
-			if value := PointerCode(slice); value != nil {
-				out = append(out, value)
-			}
+			// if value := PointerCode(slice); value != nil {
+			// 	out = append(out, value)
+			// }
 		}
 		return out
 	}

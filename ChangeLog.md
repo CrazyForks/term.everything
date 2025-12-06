@@ -1,3 +1,6 @@
+# 0.7.8
+- Added support for mouse when really zoomed out by
+    - Adding SGR 1006 support for mouse reporting in terminals that support it.
 # 0.7.7
 - Fixed a bug where the terminal would not output SIXELS even when the override was set.
 # 0.7.6

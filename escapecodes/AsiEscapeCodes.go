@@ -3,7 +3,7 @@ package escapecodes
 const (
 	DisableAlternativeScreenBuffer = "\x1b[?1049l"
 	EnableAlternativeScreenBuffer  = "\x1b[?1049h"
-	EnableNormalMouseTracking      = "\x1b[?1000h"
+	EnableSGR                      = "\x1b[?1006h"
 	EnableMouseTracking            = "\x1b[?1003h"
 	DisableMouseTracking           = "\x1b[?1003l"
 	DisableNormalMouseTracking     = "\x1b[?1000l"

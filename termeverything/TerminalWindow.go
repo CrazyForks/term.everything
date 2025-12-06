@@ -80,9 +80,8 @@ func MakeTerminalWindow(
 
 	if !protocols.DebugRequests {
 		os.Stdout.WriteString(escapecodes.EnableAlternativeScreenBuffer)
-		// TODO turn this on, I might be missing the mouse up events without it
-		// os.Stdout.WriteString(escapecodes.EnableNormalMouseTracking)
 		os.Stdout.WriteString(escapecodes.EnableMouseTracking)
+		os.Stdout.WriteString(escapecodes.EnableSGR)
 
 		os.Stdout.WriteString(escapecodes.HideCursor)
 	}
@@ -270,7 +269,7 @@ func (tw *TerminalWindow) ProcessCodes(codes []XkbdCode) {
 							uint32(version),
 							pointerID,
 						)
-						if release != nil {
+						if c.NeedToReleaseOtherButtons && release != nil {
 							protocols.WlPointer_button(
 								s,
 								pointerID,
@@ -290,11 +289,14 @@ func (tw *TerminalWindow) ProcessCodes(codes []XkbdCode) {
 			}
 
 		case *PointerButtonRelease:
-			if tw.PressedMouseButton == nil {
-				break
+			buttonToRelease := c.Button
+			if c.NeedsButtonGuessing {
+				if tw.PressedMouseButton == nil {
+					break
+				}
+				buttonToRelease = *tw.PressedMouseButton
+				tw.PressedMouseButton = nil
 			}
-			buttonToRelease := *tw.PressedMouseButton
-			tw.PressedMouseButton = nil
 
 			for _, s := range tw.Clients {
 
